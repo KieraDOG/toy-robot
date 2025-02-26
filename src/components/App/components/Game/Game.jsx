@@ -1,6 +1,17 @@
 import { useState } from "react";
 import Commands from "./components/Commands";
 import Stage from "./components/Stage";
+import modulo from "./utils/modulo";
+import minmax from "./utils/minmax";
+
+// 好的代码要写三遍！好的代码要写三遍！好的代码要写三遍！
+
+// Unit Test
+
+// Readable，Maintainable，Reusable，Testable
+// SOLID
+
+// Single Responsibly, Open Close, Dependency Injection
 
 // 验证 state 应该被放置在哪里，验证！验证！验证！
 
@@ -13,9 +24,6 @@ import Stage from "./components/Stage";
 // 已知，Game 来设置参数 setRobotPositionOnStage
 // 在 Game 中把所有的 业务逻辑 写出来
 // handle*
-
-const modulo = (n, m) => ((n % m) + m) % m;
-const minmax = (n, min, max) => Math.min(max, Math.max(min, n));
 
 const MOVE = {
   North: { dx: 0, dy: -1 },
@@ -42,6 +50,52 @@ const turn = (face, di) => {
 
 // 符合人类思维方式的代码才是最好的代码
 
+const isBlocked = (x, y, blockPositionsOnStage) =>
+  blockPositionsOnStage.some((block) => block.x === x && block.y === y);
+
+export const move = (robotPositionOnStage, blockPositionsOnStage) => {
+  const { x, y, face } = robotPositionOnStage;
+
+  const { dx, dy } = MOVE[face];
+
+  const newPosition = {
+    x: minmax(x + dx, 0, 4),
+    y: minmax(y + dy, 0, 4),
+    face,
+  };
+
+  if (isBlocked(newPosition.x, newPosition.y, blockPositionsOnStage)) {
+    return { x, y, face };
+  }
+
+  return newPosition;
+};
+
+export const place = (stage, robotPositionOnStage, blockPositionsOnStage) => {
+  const positions = stage.filter(({ x, y }) => {
+    const isSameXPositionToRobotOnStage = x === robotPositionOnStage.x;
+    const isSameYPositionToRobotOnStage = y === robotPositionOnStage.y;
+
+    const isSamePositionToRobotOnStage =
+      isSameXPositionToRobotOnStage && isSameYPositionToRobotOnStage;
+
+    return (
+      !isBlocked(x, y, blockPositionsOnStage) && !isSamePositionToRobotOnStage
+    );
+  });
+
+  const randomIndex = Math.floor(Math.random() * positions.length);
+  return positions[randomIndex];
+};
+
+export const getStage = (rows, columns) =>
+  Array.from({ length: rows }, (_, i) => i).reduce((acc, y) => {
+    return [
+      ...acc,
+      ...Array.from({ length: columns }, (_, i) => i).map((x) => ({ x, y })),
+    ];
+  }, []);
+
 const Game = () => {
   const [robotPositionOnStage, setRobotPositionOnStage] = useState({
     x: 2,
@@ -51,22 +105,9 @@ const Game = () => {
 
   const [blockPositionsOnStage, setBlockPositionsOnStage] = useState([]);
 
-  const isBlocked = (x, y) =>
-    blockPositionsOnStage.some((block) => block.x === x && block.y === y);
-
   const handleCommandsMoveClick = () => {
     setRobotPositionOnStage(({ x, y, face }) => {
-      const { dx, dy } = MOVE[face];
-
-      const newPosition = {
-        x: minmax(x + dx, 0, 4),
-        y: minmax(y + dy, 0, 4),
-        face,
-      };
-
-      if (isBlocked(newPosition.x, newPosition.y)) {
-        return { x, y, face };
-      }
+      const newPosition = move({ x, y, face }, blockPositionsOnStage);
 
       return newPosition;
     });
@@ -95,25 +136,13 @@ const Game = () => {
   };
 
   const handleCommandsBlockClick = () => {
-    const positions = Array.from({ length: 5 }, (_, i) => i)
-      .reduce((acc, x) => {
-        return [
-          ...acc,
-          ...Array.from({ length: 5 }, (_, y) => y).map((y) => ({ x, y })),
-        ];
-      }, [])
-      .filter(({ x, y }) => {
-        const isSameXPositionToRobotOnStage = x === robotPositionOnStage.x;
-        const isSameYPositionToRobotOnStage = y === robotPositionOnStage.y;
+    const stage = getStage(5, 5);
 
-        const isSamePositionToRobotOnStage =
-          isSameXPositionToRobotOnStage && isSameYPositionToRobotOnStage;
-
-        return !isBlocked(x, y) && !isSamePositionToRobotOnStage;
-      });
-
-    const randomIndex = Math.floor(Math.random() * positions.length);
-    const blockPosition = positions[randomIndex];
+    const blockPosition = place(
+      stage,
+      robotPositionOnStage,
+      blockPositionsOnStage
+    );
 
     setBlockPositionsOnStage((prevState) => [...prevState, blockPosition]);
   };

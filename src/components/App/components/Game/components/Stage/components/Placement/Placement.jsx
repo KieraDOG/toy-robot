@@ -1,5 +1,7 @@
 const Placement = ({ position, children }) => (
   <div
+    role="gridcell"
+    aria-label={`Placement at ${position.x},${position.y}`}
     style={{
       top: `${position.y * 60}px`,
       left: `${position.x * 60}px`,

@@ -1,13 +1,17 @@
-import Row from './components/Row'
+import Row from "./components/Row";
 
 const Board = () => (
-  <div className="border border-black rounded-md">
-    <Row />
-    <Row />
-    <Row />
-    <Row />
-    <Row />
+  <div
+    role="grid"
+    aria-label="Board"
+    className="border border-black rounded-md"
+  >
+    <Row y={0} />
+    <Row y={1} />
+    <Row y={2} />
+    <Row y={3} />
+    <Row y={4} />
   </div>
-)
+);
 
-export default Board
+export default Board;
