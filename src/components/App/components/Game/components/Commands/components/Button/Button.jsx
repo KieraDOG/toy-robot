@@ -1,5 +1,6 @@
-const Button = ({ children, onClick }) => (
+const Button = ({ children, onClick, type = "button" }) => (
   <button
+    type={type}
     onClick={onClick}
     className="
       min-w-[150px] border-1 border-gray-800 rounded-full h-[50px]

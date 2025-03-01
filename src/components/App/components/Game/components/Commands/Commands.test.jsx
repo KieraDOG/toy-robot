@@ -60,7 +60,7 @@ test("renders Right button and calls onRightButtonClick when clicked", async () 
   expect(onRightButtonClick).toHaveBeenCalled();
 });
 
-test("renders Block button and calls onBlockButtonClick when clicked", async () => {
+test("renders Place button and calls onBlockButtonClick when choose to place Block type", async () => {
   const onBlockButtonClick = vi.fn();
   const user = userEvent.setup();
 
@@ -74,7 +74,9 @@ test("renders Block button and calls onBlockButtonClick when clicked", async () 
     />
   );
 
-  await user.click(screen.getByRole("button", { name: "Block" }));
+  await user.click(screen.getByRole("button", { name: "Place" }));
+  await user.selectOptions(screen.getByRole("combobox"), "BLOCK");
+  await user.click(screen.getByRole("button", { name: "Confirm" }));
 
   expect(onBlockButtonClick).toHaveBeenCalled();
 });
